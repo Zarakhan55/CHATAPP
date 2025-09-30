@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare, User } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AuthImagePattern from "../components/AuthImagePattern";
 import toast from "react-hot-toast";
 
@@ -11,9 +11,11 @@ const SignUpPage = () => {
     fullName: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
 
   const { signup, isSigningUp } = useAuthStore();
+  const navigate = useNavigate();
 
   const validateForm = () => {
     if (!formData.fullName.trim()) return toast.error("Full name is required");
@@ -21,14 +23,24 @@ const SignUpPage = () => {
     if (!/\S+@\S+\.\S+/.test(formData.email)) return toast.error("Invalid email format");
     if (!formData.password) return toast.error("Password is required");
     if (formData.password.length < 6) return toast.error("Password must be at least 6 characters");
+    if (formData.password !== formData.confirmPassword)
+      return toast.error("Passwords do not match");
 
     return true;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const success = validateForm();
-    if (success === true) signup(formData);
+    if (success === true) {
+      const res = await signup({
+        fullName: formData.fullName,
+        email: formData.email.trim(),
+        password: formData.password,
+      });
+
+      if (res) navigate("/profile"); // redirect after success
+    }
   };
 
   return (
@@ -52,8 +64,9 @@ const SignUpPage = () => {
 
           {/* FORM */}
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Full Name */}
             <div className="form-control">
-              <label className="label">
+              <label htmlFor="fullName" className="label">
                 <span className="label-text font-medium">Full Name</span>
               </label>
               <div className="relative">
@@ -61,17 +74,19 @@ const SignUpPage = () => {
                   <User className="size-5 text-base-content/40" />
                 </div>
                 <input
+                  id="fullName"
                   type="text"
                   className="input input-bordered w-full pl-10"
-                  placeholder="John Doe"
+                  placeholder="User Name"
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                 />
               </div>
             </div>
 
+            {/* Email */}
             <div className="form-control">
-              <label className="label">
+              <label htmlFor="email" className="label">
                 <span className="label-text font-medium">Email</span>
               </label>
               <div className="relative">
@@ -79,17 +94,19 @@ const SignUpPage = () => {
                   <Mail className="size-5 text-base-content/40" />
                 </div>
                 <input
+                  id="email"
                   type="email"
                   className="input input-bordered w-full pl-10"
                   placeholder="you@example.com"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value.trim() })}
                 />
               </div>
             </div>
 
+            {/* Password */}
             <div className="form-control">
-              <label className="label">
+              <label htmlFor="password" className="label">
                 <span className="label-text font-medium">Password</span>
               </label>
               <div className="relative">
@@ -97,6 +114,7 @@ const SignUpPage = () => {
                   <Lock className="size-5 text-base-content/40" />
                 </div>
                 <input
+                  id="password"
                   type={showPassword ? "text" : "password"}
                   className="input input-bordered w-full pl-10"
                   placeholder="••••••••"
@@ -114,6 +132,26 @@ const SignUpPage = () => {
                     <Eye className="size-5 text-base-content/40" />
                   )}
                 </button>
+              </div>
+            </div>
+
+            {/* Confirm Password */}
+            <div className="form-control">
+              <label htmlFor="confirmPassword" className="label">
+                <span className="label-text font-medium">Confirm Password</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="size-5 text-base-content/40" />
+                </div>
+                <input
+                  id="confirmPassword"
+                  type={showPassword ? "text" : "password"}
+                  className="input input-bordered w-full pl-10"
+                  placeholder="••••••••"
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                />
               </div>
             </div>
 

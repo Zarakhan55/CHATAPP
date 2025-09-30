@@ -1,3 +1,5 @@
+// import { THEMES } from "../constants";
+
 export const THEMES = [
   "light",
   "dark",

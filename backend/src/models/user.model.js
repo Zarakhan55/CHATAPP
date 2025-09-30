@@ -6,10 +6,13 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+      trim: true, 
+      lowercase: true, // normalize emails
     },
     fullName: {
       type: String,
       required: true,
+      trim: true,
     },
     password: {
       type: String,
@@ -18,7 +21,7 @@ const userSchema = new mongoose.Schema(
     },
     profilePic: {
       type: String,
-      default: "",
+      default: "/avatar.png", 
     },
   },
   { timestamps: true }
